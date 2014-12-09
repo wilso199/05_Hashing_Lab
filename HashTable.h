@@ -102,7 +102,9 @@ template <class Key, class T>
 unsigned long HashTable<Key,T>::calcIndex(Key k){
     
     unsigned long i = hash(k);
+    
     for (i; true; i++) {
+        
         if (backingArray[i % backingArraySize].isNull || backingArray[i % backingArraySize].k == k){
             return (i % backingArraySize);
         }
@@ -118,13 +120,21 @@ void HashTable<Key,T>::add(Key k, T x){
     }
     
     unsigned long hashKey = hash(k);
+    
     for (hashKey; true; hashKey++) {
-        if (backingArray[hashKey % backingArraySize].isNull || backingArray[hashKey % backingArraySize].k == k || backingArray[hashKey % backingArraySize].isDel){
+        
+        unsigned long hashValue = hashKey % backingArraySize;
+        
+        if(keyExists(k)){
+            return;
+        }
+        else if (backingArray[hashValue].isNull || backingArray[hashValue].k == k || backingArray[hashValue].isDel){
+            
             hashKey = (hashKey % backingArraySize);
             break;
-        }
-        
+            }
     }
+    
     backingArray[hashKey].k = k;
     backingArray[hashKey].x = x;
     backingArray[hashKey].isNull = false;
@@ -136,6 +146,7 @@ template <class Key, class T>
 void HashTable<Key,T>::remove(Key k){
     
     if(keyExists(k)){
+        
         backingArray[calcIndex(k)].isDel = true;
         numRemoved++;
         numItems--;
@@ -155,7 +166,6 @@ T HashTable<Key,T>::find(Key k){
 
 template <class Key, class T>
 bool HashTable<Key,T>::keyExists(Key k){
-    
     
     if(backingArray[calcIndex(k)].k == k && !backingArray[calcIndex(k)].isDel){
         return true;
@@ -179,17 +189,16 @@ void HashTable<Key,T>::grow(){
     HashRecord* oldArray = backingArray;
     int oldArraySize = backingArraySize;
     
-    delete[] backingArray;
-    
     backingArraySize = hashPrimes[primesIndex];
     backingArray = new HashRecord[backingArraySize];
-    
+
     for(int i = 0; i < oldArraySize; i++){
+        
         if(oldArray[i].isNull == false && oldArray[i].isDel == false){
             add(oldArray[i].k, oldArray[i].x);
         }
-        
     }
+    delete[] oldArray;
 }
 
 
